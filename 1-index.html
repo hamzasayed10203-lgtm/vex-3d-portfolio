@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VEX — تجربة بصرية | مونتاج ريلز</title>
+<meta name="description" content="VEX — مونتاج ريلز بإيقاع محسوب. مش مجرد فيديو، دي تجربة.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+  }
+}
+</script>
+</head>
+<body>
+
+<!-- 3D background -->
+<canvas id="scene" aria-hidden="true"></canvas>
+<div id="fallback-bg" aria-hidden="true"></div>
+
+<!-- Header -->
+<header class="nav">
+  <div class="nav-logo">VEX<span>.</span></div>
+  <nav>
+    <a href="#work">الأعمال</a>
+    <a href="#about">عنّي</a>
+    <a href="#pricing">الأسعار</a>
+    <a href="#contact" class="nav-cta">اطلب ريل</a>
+  </nav>
+</header>
+
+<main>
+  <!-- Hero -->
+  <section class="hero" id="top">
+    <p class="hero-kicker">VEX — VISUAL EXPERIENCES · EST. 2026</p>
+    <h1>مش مجرد فيديو.<br><span class="grad">دي تجربة.</span></h1>
+    <p class="hero-sub">مونتاج ريلز بإيقاع محسوب، وتفاصيل تخلي كل ثانية ليها معنى.</p>
+    <div class="hero-actions">
+      <a href="#work" class="btn btn-primary">شوف الشغل</a>
+      <a href="#contact" class="btn btn-ghost">اطلب ريل دلوقتي</a>
+    </div>
+    <p class="hero-hint" id="drag-hint">✦ جرّب تسحب المشهد بصباعك أو بالماوس</p>
+  </section>
+
+  <!-- Work -->
+  <section class="section" id="work">
+    <p class="sec-num">01</p>
+    <h2>أعمال مختارة<span class="dot">.</span></h2>
+    <p class="sec-sub">كل مشروع له إيقاعه، وكل لقطة لها سبب. دي عينات حقيقية من الشغل.</p>
+    <div class="work-grid">
+      <article class="work-card">
+        <div class="work-frame">
+          <iframe src="https://drive.google.com/file/d/1HficdsCKxcewqkemYcpuD048rxR2DNSz/preview" loading="lazy" allow="autoplay; fullscreen" allowfullscreen title="ريل — المهندس علاء"></iframe>
+        </div>
+        <h3>المهندس علاء — ريل</h3>
+        <p>مونتاج كامل: إيقاع، انتقالات، وألوان.</p>
+      </article>
+      <article class="work-card">
+        <div class="work-frame">
+          <iframe src="https://drive.google.com/file/d/1WbaMt4MIgAnjuavP2QU51zOy8nRf0pWw/preview" loading="lazy" allow="autoplay; fullscreen" allowfullscreen title="ريل — مونتاجي 2"></iframe>
+        </div>
+        <h3>مونتاجي — ريل 2</h3>
+        <p>قطع سريع على البيت مع كابشن متزامن.</p>
+      </article>
+      <article class="work-card">
+        <div class="work-frame">
+          <iframe src="https://drive.google.com/file/d/1sSnMK7QRq8X4gK285PBntAN3xSbRZf7r/preview" loading="lazy" allow="autoplay; fullscreen" allowfullscreen title="ريل — مونتاجي"></iframe>
+        </div>
+        <h3>مونتاجي — ريل</h3>
+        <p>ستايل سينمائي هادي بيخدم الرسالة.</p>
+      </article>
+    </div>
+    <!-- PLACEHOLDER: لما تضيف شغل جديد، انسخ كارت من اللي فوق وغيّر لينك الفيديو والعنوان -->
+  </section>
+
+  <!-- About -->
+  <section class="section" id="about">
+    <p class="sec-num">02</p>
+    <h2>الفكرة تستحق تتقدم صح<span class="dot">.</span></h2>
+    <div class="about-wrap">
+      <p class="about-lead">أنا VEX Editor. بشتغل على تحويل اللقطات الخام لفيديو متماسك — سريع لما يحتاج، وهادي لما اللحظة تستاهل. الهدف مش مؤثرات أكتر؛ الهدف إن الرسالة توصل وتفضل في الذاكرة.</p>
+      <ul class="about-points">
+        <li><span>01</span>إيقاع يخدم القصة</li>
+        <li><span>02</span>تفاصيل بصرية محسوبة</li>
+        <li><span>03</span>تواصل واضح من البداية</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- Pricing -->
+  <section class="section" id="pricing">
+    <p class="sec-num">03</p>
+    <h2>الأسعار<span class="dot">.</span></h2>
+    <div class="price-card">
+      <p class="price-label">ريل واحد</p>
+      <p class="price-value">450 <small>ج.م</small></p>
+      <ul>
+        <li>مونتاج كامل مع مؤثرات وانتقالات</li>
+        <li>كابشن متزامن مع الصوت</li>
+        <li>تصحيح ألوان أساسي</li>
+        <li>تعديلات لحد ما تبقى راضي</li>
+      </ul>
+      <p class="price-note">في خصم للباقات — أقل سعر للريل 400 ج.م حسب عدد الفيديوهات.</p>
+      <a href="#contact" class="btn btn-primary">اطلب دلوقتي</a>
+    </div>
+  </section>
+
+  <!-- Contact -->
+  <section class="section" id="contact">
+    <p class="sec-num">04</p>
+    <h2>خلّي فكرتك تتحرك<span class="dot">.</span></h2>
+    <p class="sec-sub">ابعت تفاصيل مشروعك من الفورم، ونشوف أنسب طريقة نحوّله لتجربة تستحق المشاهدة.</p>
+    <a class="btn btn-primary btn-big" href="https://docs.google.com/forms/d/e/1FAIpQLSdZruIXh1YizZUA_4aA3jv5V2VvQAJNxCEprD7ScWS52ZfD5A/viewform" target="_blank" rel="noopener">املأ فورم الطلب ↗</a>
+  </section>
+</main>
+
+<footer>
+  <span>VEX — VISUAL EXPERIENCES</span>
+  <span>EST. 2026 · CUT TO THE FEELING</span>
+  <span class="version">v1 — أول نسخة</span>
+</footer>
+
+<script type="module" src="main.js"></script>
+</body>
+</html>
