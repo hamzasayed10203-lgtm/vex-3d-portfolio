@@ -382,6 +382,7 @@ footer {
   border: 1px solid transparent;
   transition: color 0.2s, border-color 0.2s, transform 0.2s;
 }
+.footer-socials a[hidden] { display: none; }
 .footer-socials a:hover {
   color: var(--purple-bright);
   border-color: var(--border);
