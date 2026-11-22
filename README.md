@@ -42,7 +42,7 @@ python3 -m http.server 8080
 
 الريبو متنشر على GitHub Pages من برانش `main` (المجلد الجذري `/`). أي push على `main` بيحدّث الموقع تلقائيًا خلال دقيقة تقريبًا.
 
-Live: https://hmzvairo.github.io/vex-3d-portfolio/
+Live: https://hamzasayed10203-lgtm.github.io/vex-3d-portfolio/
 
 ## إضافة شغل جديد
 
