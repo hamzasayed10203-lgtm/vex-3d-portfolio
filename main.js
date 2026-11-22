@@ -11,6 +11,16 @@ import { TextGeometry } from "three/addons/geometries/TextGeometry.js";
 /* ================= Config ================= */
 
 const SHEET_ID = "1xUSmTZYU8j4_-2RyUTJnj7fpmiZEKEfyv_5Q0Ten08A";
+const SUPA_URL = "https://aoabbtazodqpkkriitfj.supabase.co";
+const SUPA_KEY = "sb_publishable_PKo1mx_pBxg16R8y2_6y6Q_aGRWWDU4";
+
+async function supaGet(path) {
+  const res = await fetch(`${SUPA_URL}/rest/v1/${path}`, {
+    headers: { apikey: SUPA_KEY, Authorization: `Bearer ${SUPA_KEY}` },
+  });
+  if (!res.ok) throw new Error("supabase http " + res.status);
+  return res.json();
+}
 const DEFAULT_WHATSAPP =
   "https://wa.me/201558077266?text=%D8%A3%D9%87%D9%84%D8%A7%D9%8B+VEX+%F0%9F%91%8B+%D8%B9%D8%A7%D9%8A%D8%B2+%D8%A3%D8%B7%D9%84%D8%A8+%D8%B1%D9%8A%D9%84+%D9%84%D8%AA%D8%AC%D8%B1%D8%A8%D8%A9+%D8%A8%D8%B5%D8%B1%D9%8A%D8%A9+%D8%AC%D8%AF%D9%8A%D8%AF%D8%A9";
 
@@ -152,6 +162,23 @@ async function loadWorks() {
   let works = FALLBACK_WORKS;
   let usedFallback = true;
   try {
+    const rows = await supaGet("works?select=title,video_url,cover_url,description&order=sort_order.asc");
+    const parsed = rows
+      .map((r) => ({
+        title: (r.title || "").trim(),
+        video: (r.video_url || "").trim(),
+        cover: (r.cover_url || "").trim(),
+        desc: (r.description || "").trim(),
+      }))
+      .filter((w) => w.title && (w.video || w.cover));
+    if (parsed.length) {
+      works = parsed;
+      usedFallback = false;
+    }
+  } catch (e) {
+    console.warn("works supabase fetch failed, trying sheet", e);
+  }
+  if (usedFallback) try {
     const { rows } = await fetchGviz("works");
     const parsed = [];
     for (const r of rows) {
@@ -168,14 +195,14 @@ async function loadWorks() {
       usedFallback = false;
     }
   } catch (e) {
-    console.warn("works sheet fetch failed, using bundled works", e);
+    console.warn("sheet fallback failed, using bundled works", e);
   }
   grid.innerHTML = "";
   for (const w of works) grid.appendChild(buildWorkCard(w));
   if (usedFallback) {
     const note = document.createElement("p");
     note.className = "work-error";
-    note.textContent = "تعذر تحميل الأعمال من الشيت — معروضة نسخة محفوظة.";
+    note.textContent = "تعذر تحميل الأعمال — معروضة نسخة محفوظة.";
     grid.appendChild(note);
   }
   initTilt(grid);
@@ -186,9 +213,17 @@ async function loadLinks() {
   const waFooter = document.getElementById("social-whatsapp");
   if (waCta) waCta.href = DEFAULT_WHATSAPP;
   if (waFooter) waFooter.href = DEFAULT_WHATSAPP;
+  const map = {};
   try {
+    const rows = await supaGet("site_links?select=key,url");
+    for (const r of rows) {
+      if (r.key && r.url) map[String(r.key).toLowerCase()] = r.url;
+    }
+  } catch (e) {
+    console.warn("links supabase fetch failed, trying sheet", e);
+  }
+  if (!Object.keys(map).length) try {
     const { rows } = await fetchGviz("links");
-    const map = {};
     for (const r of rows) {
       const k = (r[0] || "").trim().toLowerCase();
       const v = (r[1] || "").trim();
@@ -209,7 +244,7 @@ async function loadLinks() {
       ig.hidden = false;
     }
   } catch (e) {
-    console.warn("links sheet fetch failed", e);
+    console.warn("links sheet fallback failed", e);
   }
 }
 
