@@ -1,6 +1,6 @@
 :root {
   --bg: #07070d;
-  --bg-soft: rgba(13, 13, 24, 0.82);
+  --bg-soft: rgba(13, 13, 24, 0.72);
   --purple: #8b5cf6;
   --purple-bright: #a78bfa;
   --pink: #d946ef;
@@ -199,7 +199,7 @@ main, .nav, footer { position: relative; z-index: 2; }
   position: absolute;
   inset: 0;
   background: var(--bg);
-  opacity: 0.78;
+  opacity: 0.6;
   z-index: -1;
 }
 .sec-num {
