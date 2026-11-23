@@ -411,3 +411,4 @@ footer {
 .nav .nav-cta{border-color:rgba(50,203,201,.45);color:#72e4e0}
 .btn-primary{background:linear-gradient(120deg,#7530d8,#8b3dff)}
 :focus-visible{outline:2px solid #32cbc9;outline-offset:4px}
+.hero h1 .grad{text-shadow:none;filter:drop-shadow(0 3px 12px rgba(7,7,13,.8))}
