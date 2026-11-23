@@ -25,11 +25,14 @@
     try{
       const r=await fetch(API,{headers:{apikey:KEY}});if(!r.ok)throw Error('load');const rows=await r.json();
       const items=(rows.length?JSON.parse(rows[0].url):defaults);if(!Array.isArray(items))throw Error('format');
+      let works=[];
+      try{const wr=await fetch('https://aoabbtazodqpkkriitfj.supabase.co/rest/v1/works?select=*',{headers:{apikey:KEY}});if(wr.ok)works=await wr.json()}catch{}
+      for(const n of items)n.examples=(n.examples||[]).map(e=>{if(!e.work_id)return e;const w=works.find(w=>w.id===e.work_id);return w?{...e,title:w.title,description:w.description||'',after:w.video_url,cover:w.cover_url}:null}).filter(Boolean);
       const published=items.filter(n=>n.published!==false);
       host.replaceChildren();
       if(host.id==='niche-grid'){
         if(!published.length){document.getElementById('niches').hidden=true;return;}
-        published.forEach((n,i)=>{const a=document.createElement('a');a.className='niche-card';a.href='niche.html?slug='+encodeURIComponent(n.id);a.append(text('span',String(i+1).padStart(2,'0'),'niche-number'),text('h3',n.title),text('p',n.description),text('span','شوف التفاصيل والأمثلة ←','niche-more'));host.append(a);});
+        published.forEach((n,i)=>{const a=document.createElement('a');a.className='niche-card';a.href='niche.html?slug='+encodeURIComponent(n.id);a.append(text('span',String(i+1).padStart(2,'0'),'niche-number'),text('h3',n.title),text('p',n.description),text('span',(n.examples||[]).length+' فيديو · افتح البلاي ليست ←','niche-more'));host.append(a);});
       }else{
         const slug=new URLSearchParams(location.search).get('slug');const n=published.find(x=>x.id===slug);
         if(!n){host.append(text('h1','الصفحة مش موجودة'),text('p','ممكن تكون اتشالت أو لسه مش منشورة.'));return;}
