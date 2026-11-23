@@ -68,12 +68,14 @@
 @keyframes vex-progress{from{transform:scaleX(0)}to{transform:scaleX(1)}}
 @media(max-width:700px){.vex-intro{--duration:2.4s}.saturn-ring{width:87vw;height:87vw;margin-left:-43.5vw;margin-top:-43.5vw}.intro-top{top:24px}.intro-bottom{bottom:26px;font-size:8px;letter-spacing:.12em}.intro-bottom>span{max-width:130px}.intro-title strong{font-size:76px}.intro-title p{font-size:8px;letter-spacing:.28em}.intro-wordmark{font-size:20px}.intro-skip{font-size:12px;padding:8px 16px}.intro-dust{background-size:650px;opacity:.45}}
 @media(prefers-reduced-motion:reduce){.vex-intro{display:none!important}body.intro-active{overflow:auto}}
+
+.intro-controls{display:flex;gap:8px;align-items:center}.intro-sound{border:1px solid #514069;border-radius:999px;background:#100d20;color:#cdbbea;min-height:44px;padding:8px 14px;font:600 12px Cairo,system-ui,sans-serif;cursor:pointer}.intro-sound:focus-visible{outline:2px solid #b99aff;outline-offset:3px}@media(max-width:700px){.intro-sound{padding:6px 10px;font-size:10px}.intro-controls{gap:6px}.intro-top{left:5vw;right:5vw}}
 </style>
 </head>
 <body>
 <div id="vex-intro" class="vex-intro" role="region" aria-label="مقدمة VEX" aria-hidden="true">
   <div class="intro-dust" aria-hidden="true"></div><div class="intro-orbit intro-orbit-back" aria-hidden="true"><div class="saturn-ring saturn-0"></div><div class="saturn-ring saturn-1"></div><div class="saturn-ring saturn-2"></div></div><div class="intro-orbit intro-orbit-front" aria-hidden="true"><div class="saturn-ring saturn-0"></div><div class="saturn-ring saturn-1"></div><div class="saturn-ring saturn-2"></div></div>
-  <div class="intro-top"><span class="intro-wordmark">VEX<span>.</span></span><button class="intro-skip" type="button" aria-label="تخطي المقدمة">تخطي / Skip ↗</button></div>
+  <div class="intro-top"><span class="intro-wordmark">VEX<span>.</span></span><div class="intro-controls"><button class="intro-sound" type="button" aria-label="تشغيل صوت المقدمة" aria-pressed="false">الصوت: إيقاف</button><button class="intro-skip" type="button" aria-label="تخطي المقدمة">تخطي / Skip ↗</button></div></div>
   <div class="intro-title"><strong>VEX</strong><p>VISUAL EXPERIENCES</p></div>
   <div class="intro-bottom"><span>CUT TO THE FEELING</span><span class="intro-progress" aria-hidden="true"><i></i></span><span>VIDEO EDITING STUDIO</span></div>
 </div>
@@ -178,22 +180,46 @@
 <script>/* VEX intro: pre-rendered contour layer and compositor-only animation. */
 (()=>{
  'use strict';const overlay=document.getElementById('vex-intro');if(!overlay)return;
- const reduced=matchMedia('(prefers-reduced-motion: reduce)'),skip=overlay.querySelector('button');
- let timer=0,hideTimer=0,active=false,inertNodes=[],remaining=0,start=0;
+ const reduced=matchMedia('(prefers-reduced-motion: reduce)'),skip=overlay.querySelector('.intro-skip'),sound=overlay.querySelector('.intro-sound');
+ let timer=0,hideTimer=0,active=false,inertNodes=[],remaining=0,start=0,total=0;
+ let ctx=null,gain=null,buffers=null,loading=null,sources=[],enabled=false,lockedMute=false,serial=0;
+ try{lockedMute=localStorage.getItem('vex-intro-muted')==='1'}catch{}
+ const elapsed=()=>total-remaining+(document.hidden?0:performance.now()-start);
+ function updateSound(){sound.textContent=enabled?'الصوت: تشغيل':'الصوت: إيقاف';sound.setAttribute('aria-pressed',String(enabled));sound.setAttribute('aria-label',enabled?'كتم صوت المقدمة':'تشغيل صوت المقدمة')}
+ function stopSound(){serial++;sources.forEach(s=>{try{s.stop()}catch{}});sources=[]}
+ async function playSound(){
+  if(!active||reduced.matches||document.hidden||!enabled)return;
+  const token=++serial;
+  try{
+   if(!ctx){ctx=new (window.AudioContext||window.webkitAudioContext)();gain=ctx.createGain();gain.gain.value=.36;gain.connect(ctx.destination)}
+   await ctx.resume();
+   if(!loading)loading=Promise.all(['1-intro-sweep.mp3','4-intro-tick.mp3','3-intro-reveal.mp3'].map(async f=>{const r=await fetch(f);if(!r.ok)throw Error('audio unavailable');return ctx.decodeAudioData(await r.arrayBuffer())})).then(b=>buffers=b).catch(()=>{loading=null;return null});
+   await loading;if(!buffers||token!==serial||!active||!enabled||document.hidden)return;
+   const scale=total/3000,t=elapsed()/1000,now=ctx.currentTime,end=total/1000;
+   gain.gain.cancelScheduledValues(now);gain.gain.setValueAtTime(.36,now);gain.gain.setValueAtTime(.36,now+Math.max(0,2.45*scale-t));gain.gain.linearRampToValueAtTime(0,now+Math.max(.02,end-t));
+   [[0,0,1],[.25,1,.32],[.48,1,.256],[.68,1,.192],[.76,2,.62]].forEach(([at,i,vol])=>{
+    at*=scale;const offset=Math.max(0,t-at);if((i===1&&offset>.07)||offset>=buffers[i].duration*scale||t>=end)return;
+    const source=ctx.createBufferSource(),level=ctx.createGain();source.buffer=buffers[i];source.playbackRate.value=1/scale;level.gain.value=vol;source.connect(level);level.connect(gain);source.start(now+Math.max(0,at-t),offset/scale);sources.push(source);
+   });
+  }catch{enabled=false;updateSound()}
+ }
+ sound.addEventListener('click',()=>{enabled=!enabled;lockedMute=!enabled;try{localStorage.setItem('vex-intro-muted',enabled?'0':'1')}catch{}stopSound();updateSound();if(enabled)playSound()});
+ function unlock(e){if(!active||lockedMute||enabled||e.repeat||e.target.closest('button,a,input')||reduced.matches)return;enabled=true;updateSound();playSound()}
+ overlay.addEventListener('pointerdown',unlock);document.addEventListener('keydown',e=>{if(e.key!=='Escape'&&e.key!=='Tab')unlock(e)});updateSound();
  function finish(immediate=false){
-  if(!active)return;active=false;clearTimeout(timer);overlay.classList.add('is-exiting');
+  if(!active)return;stopSound();enabled=false;updateSound();active=false;clearTimeout(timer);overlay.classList.add('is-exiting');
   inertNodes.forEach(([el,v])=>el.inert=v);inertNodes=[];document.body.classList.remove('intro-active');window.dispatchEvent(new Event('vex-intro-end'));
   if(overlay.contains(document.activeElement)){skip.blur();const h=document.querySelector('h1');if(h){h.tabIndex=-1;h.focus({preventScroll:true})}}
   const hide=()=>{overlay.classList.remove('is-active','is-exiting','is-paused');overlay.setAttribute('aria-hidden','true')};if(immediate)hide();else hideTimer=setTimeout(hide,450);
  }
- function run(){if(reduced.matches)return;clearTimeout(hideTimer);overlay.classList.remove('is-exiting','is-paused');active=true;remaining=matchMedia('(max-width:700px)').matches?2400:3000;start=performance.now();
+ function run(){if(reduced.matches)return;clearTimeout(hideTimer);overlay.classList.remove('is-exiting','is-paused');active=true;remaining=matchMedia('(max-width:700px)').matches?2400:3000;total=remaining;start=performance.now();
   overlay.classList.add('is-active');overlay.setAttribute('aria-hidden','false');document.body.classList.add('intro-active');
   inertNodes=[...document.body.children].filter(el=>el!==overlay&&el.tagName!=='SCRIPT').map(el=>[el,el.inert]);inertNodes.forEach(([el])=>el.inert=true);
   timer=setTimeout(()=>finish(),remaining);
  }
  skip.addEventListener('click',()=>finish());document.addEventListener('keydown',e=>{if(active&&e.key==='Escape'){e.preventDefault();finish()}});
  reduced.addEventListener('change',()=>{if(reduced.matches)finish(true)});
- document.addEventListener('visibilitychange',()=>{if(!active)return;if(document.hidden){clearTimeout(timer);remaining-=performance.now()-start;overlay.classList.add('is-paused')}else{start=performance.now();overlay.classList.remove('is-paused');timer=setTimeout(()=>finish(),Math.max(0,remaining))}});
+ document.addEventListener('visibilitychange',()=>{if(!active)return;if(document.hidden){stopSound();clearTimeout(timer);remaining-=performance.now()-start;overlay.classList.add('is-paused')}else{start=performance.now();overlay.classList.remove('is-paused');if(enabled)playSound();timer=setTimeout(()=>finish(),Math.max(0,remaining))}});
  window.addEventListener('pagehide',()=>finish(true));window.addEventListener('pageshow',e=>{if(e.persisted)run()});
  try{run()}catch(e){active=true;finish(true)}
 })();
