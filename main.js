@@ -331,11 +331,11 @@ function initScene() {
   const camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 120);
   camera.position.set(0, 0, 9);
 
-  scene.add(new THREE.AmbientLight(0x8b5cf6, 0.35));
-  const key = new THREE.PointLight(0xa78bfa, 60, 60);
+  scene.add(new THREE.AmbientLight(0x8b3dff, 0.35));
+  const key = new THREE.PointLight(0x32cbc9, 60, 60);
   key.position.set(5, 6, 6);
   scene.add(key);
-  const rim = new THREE.PointLight(0xd946ef, 45, 60);
+  const rim = new THREE.PointLight(0xad66ff, 45, 60);
   rim.position.set(-6, -4, 4);
   scene.add(rim);
 
@@ -355,7 +355,7 @@ function initScene() {
   particleGeo.setAttribute("position", new THREE.BufferAttribute(positions, 3));
   const particles = new THREE.Points(
     particleGeo,
-    new THREE.PointsMaterial({ color: 0xa78bfa, size: 0.05, transparent: true, opacity: 0.65 })
+    new THREE.PointsMaterial({ color: 0x32cbc9, size: 0.05, transparent: true, opacity: 0.65 })
   );
   scene.add(particles);
 
@@ -399,10 +399,10 @@ function initScene() {
       curveSegments: 10,
     });
     geo.center();
-    const mesh = new THREE.Mesh(geo, standardMat(0x17142a, 0x8b5cf6, 0.22));
+    const mesh = new THREE.Mesh(geo, standardMat(0x17142a, 0x8b3dff, 0.22));
     const edges = new THREE.LineSegments(
       new THREE.EdgesGeometry(geo, 24),
-      new THREE.LineBasicMaterial({ color: 0xa78bfa, transparent: true, opacity: 0.55 })
+      new THREE.LineBasicMaterial({ color: 0x32cbc9, transparent: true, opacity: 0.55 })
     );
     mesh.add(edges);
     return mesh;
@@ -422,11 +422,11 @@ function initScene() {
       bevelSegments: 2,
     });
     geo.center();
-    const mesh = new THREE.Mesh(geo, standardMat(0x1c1833, 0xd946ef, 0.35));
+    const mesh = new THREE.Mesh(geo, standardMat(0x1c1833, 0xad66ff, 0.35));
     mesh.scale.setScalar(scale);
     const edges = new THREE.LineSegments(
       new THREE.EdgesGeometry(geo, 24),
-      new THREE.LineBasicMaterial({ color: 0xd946ef, transparent: true, opacity: 0.6 })
+      new THREE.LineBasicMaterial({ color: 0xad66ff, transparent: true, opacity: 0.6 })
     );
     mesh.add(edges);
     return mesh;
@@ -474,7 +474,7 @@ function initScene() {
         bevelSegments: 3,
       });
       geo.center();
-      vexText = new THREE.Mesh(geo, standardMat(0x1c1833, 0x8b5cf6, 0.18));
+      vexText = new THREE.Mesh(geo, standardMat(0x1c1833, 0x8b3dff, 0.18));
       vexText.position.set(0, 3.7, -1.5);
       register(vexText, 0, {});
       heroGroup.add(vexText);
@@ -482,7 +482,7 @@ function initScene() {
       // Small floating Arabic-flavored accents: stars around the text
       const starGeo = new THREE.OctahedronGeometry(0.16, 0);
       for (let i = 0; i < 6; i++) {
-        const star = new THREE.Mesh(starGeo, standardMat(0x241d45, 0xd946ef, 0.5));
+        const star = new THREE.Mesh(starGeo, standardMat(0x241d45, 0xad66ff, 0.5));
         const a = (i / 6) * Math.PI * 2;
         star.position.set(Math.cos(a) * 2.4, 3.7 + Math.sin(a * 2) * 0.5, -1.5 + Math.sin(a) * 1.2);
         register(star, 0, { spinFast: 1.5 + i * 0.2, bobOffset: i * 1.3, baseY: star.position.y });
@@ -512,7 +512,7 @@ function initScene() {
   }
   const workRing = new THREE.Mesh(
     new THREE.TorusGeometry(isMobile ? 4.6 : 5.2, 0.02, 8, 90),
-    new THREE.MeshBasicMaterial({ color: 0x8b5cf6, transparent: true, opacity: 0.35 })
+    new THREE.MeshBasicMaterial({ color: 0x8b3dff, transparent: true, opacity: 0.35 })
   );
   workRing.rotation.x = Math.PI / 2;
   workGroup.add(workRing);
@@ -522,27 +522,27 @@ function initScene() {
   aboutGroup.position.set(0, -ZONE_GAP * 2, -2.5);
   scene.add(aboutGroup);
   const gem1 = register(
-    new THREE.Mesh(new THREE.IcosahedronGeometry(1.5, 0), standardMat(0x17142a, 0x8b5cf6, 0.25)),
+    new THREE.Mesh(new THREE.IcosahedronGeometry(1.5, 0), standardMat(0x17142a, 0x8b3dff, 0.25)),
     2, { spin: 0.35 }
   );
   gem1.add(new THREE.LineSegments(
     new THREE.EdgesGeometry(gem1.geometry),
-    new THREE.LineBasicMaterial({ color: 0xa78bfa, transparent: true, opacity: 0.5 })
+    new THREE.LineBasicMaterial({ color: 0x32cbc9, transparent: true, opacity: 0.5 })
   ));
   gem1.position.set(-2.6, 0.4, 0);
   aboutGroup.add(gem1);
   const gem2 = register(
-    new THREE.Mesh(new THREE.OctahedronGeometry(1.1, 0), standardMat(0x1c1833, 0xd946ef, 0.3)),
+    new THREE.Mesh(new THREE.OctahedronGeometry(1.1, 0), standardMat(0x1c1833, 0xad66ff, 0.3)),
     2, { spin: -0.5 }
   );
   gem2.add(new THREE.LineSegments(
     new THREE.EdgesGeometry(gem2.geometry),
-    new THREE.LineBasicMaterial({ color: 0xd946ef, transparent: true, opacity: 0.5 })
+    new THREE.LineBasicMaterial({ color: 0xad66ff, transparent: true, opacity: 0.5 })
   ));
   gem2.position.set(2.8, -0.5, -0.5);
   aboutGroup.add(gem2);
   const gem3 = register(
-    new THREE.Mesh(new THREE.TorusKnotGeometry(0.7, 0.22, 90, 12), standardMat(0x17142a, 0x8b5cf6, 0.2)),
+    new THREE.Mesh(new THREE.TorusKnotGeometry(0.7, 0.22, 90, 12), standardMat(0x17142a, 0x8b3dff, 0.2)),
     2, { spin: 0.25 }
   );
   gem3.position.set(0.2, 1.6, -1.2);
@@ -553,18 +553,18 @@ function initScene() {
   priceGroup.position.set(0, -ZONE_GAP * 3, -2.5);
   scene.add(priceGroup);
   const bigGem = register(
-    new THREE.Mesh(new THREE.OctahedronGeometry(1.7, 0), standardMat(0x241d45, 0xa78bfa, 0.3)),
+    new THREE.Mesh(new THREE.OctahedronGeometry(1.7, 0), standardMat(0x241d45, 0x32cbc9, 0.3)),
     3, { spin: 0.3 }
   );
   bigGem.add(new THREE.LineSegments(
     new THREE.EdgesGeometry(bigGem.geometry),
-    new THREE.LineBasicMaterial({ color: 0xa78bfa, transparent: true, opacity: 0.65 })
+    new THREE.LineBasicMaterial({ color: 0x32cbc9, transparent: true, opacity: 0.65 })
   ));
   priceGroup.add(bigGem);
   const coins = [];
   for (let i = 0; i < 5; i++) {
     const coin = register(
-      new THREE.Mesh(new THREE.CylinderGeometry(0.32, 0.32, 0.08, 24), standardMat(0x2a2350, 0xd946ef, 0.35)),
+      new THREE.Mesh(new THREE.CylinderGeometry(0.32, 0.32, 0.08, 24), standardMat(0x2a2350, 0xad66ff, 0.35)),
       3, { angle: (i / 5) * Math.PI * 2, radius: 2.8, bobOffset: i * 1.7 }
     );
     coin.rotation.x = Math.PI / 2.4;
@@ -577,18 +577,18 @@ function initScene() {
   contactGroup.position.set(0, -ZONE_GAP * 4, -2.5);
   scene.add(contactGroup);
   const knot = register(
-    new THREE.Mesh(new THREE.TorusKnotGeometry(1.5, 0.4, 140, 18), standardMat(0x17142a, 0x8b5cf6, 0.28)),
+    new THREE.Mesh(new THREE.TorusKnotGeometry(1.5, 0.4, 140, 18), standardMat(0x17142a, 0x8b3dff, 0.28)),
     4, { spin: 0.22 }
   );
   knot.add(new THREE.LineSegments(
     new THREE.EdgesGeometry(new THREE.TorusKnotGeometry(1.5, 0.4, 60, 8), 30),
-    new THREE.LineBasicMaterial({ color: 0xd946ef, transparent: true, opacity: 0.28 })
+    new THREE.LineBasicMaterial({ color: 0xad66ff, transparent: true, opacity: 0.28 })
   ));
   contactGroup.add(knot);
   const sparks = [];
   const sparkGeo = new THREE.TetrahedronGeometry(0.14, 0);
   for (let i = 0; i < (isMobile ? 10 : 22); i++) {
-    const s = new THREE.Mesh(sparkGeo, standardMat(0x241d45, i % 2 ? 0xd946ef : 0xa78bfa, 0.55));
+    const s = new THREE.Mesh(sparkGeo, standardMat(0x241d45, i % 2 ? 0xad66ff : 0x32cbc9, 0.55));
     const a = Math.random() * Math.PI * 2;
     const r = 2.2 + Math.random() * 2.4;
     s.position.set(Math.cos(a) * r, (Math.random() - 0.5) * 4, Math.sin(a) * r);
@@ -619,7 +619,7 @@ function initScene() {
     }
     geo.setAttribute("position", new THREE.BufferAttribute(pos, 3));
     const mat = new THREE.PointsMaterial({
-      color: Math.random() > 0.5 ? 0xd946ef : 0xa78bfa,
+      color: Math.random() > 0.5 ? 0xad66ff : 0x32cbc9,
       size: 0.12,
       transparent: true,
       opacity: 1,
