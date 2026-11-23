@@ -2,3 +2,4 @@
 /* Extra glyph room for Arabic headings on mobile browsers. */
 .niche-detail h2{line-height:2.2;padding-block:0.15em 0.35em;overflow:visible}
 @media(max-width:640px){body:not(.niche-page) .nav{padding:12px 6vw;align-items:center;flex-wrap:wrap;gap:8px}body:not(.niche-page) .nav nav{width:100%;justify-content:space-between;gap:8px}body:not(.niche-page) .nav .nav-cta{white-space:nowrap}body:not(.niche-page) .nav-logo{font-size:20px}}
+.niche-detail h2{font-family:Arial,Tahoma,sans-serif;font-weight:700;line-height:1.8}
