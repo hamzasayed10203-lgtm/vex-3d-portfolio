@@ -77,7 +77,7 @@ textarea{min-height:70px;resize:vertical}
 </style>
 <style>.card{border-top:2px solid var(--purple-deep)}.card h2{color:var(--purple-bright)}.logo span{color:var(--purple-bright)}input:focus,textarea:focus{outline:2px solid var(--purple);outline-offset:2px}</style>
 <link rel="stylesheet" href="brand.css?v=premium-20261123">
-</head>
+<style>.ai-account #works-list .danger,.ai-account #niches-admin .danger{display:none!important}.ai-account #panel-view:before{content:'حساب AI · إضافة وتعديل فقط · كل تغيير بيتسجل';display:block;padding:16px;color:#c7a6f7;border:1px solid #7746b944;border-radius:14px;margin-bottom:20px}</style></head>
 <body>
 
 <div id="toast"></div>
@@ -201,6 +201,10 @@ async function showPanel() {
   $("login-view").classList.add("hidden");
   $("panel-view").classList.remove("hidden");
   await Promise.all([loadWorks(), loadLinks()]);
+  const {data:sessionData}=await sb.auth.getSession();const isAI=sessionData.session?.user?.id==='c24cd0e4-2615-418f-ba5f-71acb1ee7782';
+  document.body.classList.toggle('ai-account',isAI);
+  if(isAI){document.querySelectorAll('[data-act="del"],#links-save').forEach(b=>b.hidden=true);for(const id of ['link-whatsapp','link-facebook','link-instagram'])$(id).disabled=true;}
+  await loadAIActivity();
 }
 $("login-btn").onclick = async () => {
   $("login-err").textContent = "";
@@ -215,6 +219,7 @@ $("login-btn").onclick = async () => {
 $("login-pass").addEventListener("keydown", (e) => { if (e.key === "Enter") $("login-btn").click(); });
 $("logout-btn").onclick = () => sb.auth.signOut();
 
+async function loadAIActivity(){let section=$('ai-activity');if(!section){section=document.createElement('section');section.className='card';section.id='ai-activity';const h=document.createElement('h2');h.textContent='سجل نشاط المساعد';section.append(h);$('panel-view').append(section);}const old=section.querySelector('.activity-list');if(old)old.remove();const list=document.createElement('div');list.className='activity-list';section.append(list);const {data,error}=await sb.from('ai_activity_log').select('action,resource,title,created_at').order('created_at',{ascending:false}).limit(50);if(error){list.textContent='تعذر تحميل سجل النشاط.';return;}if(!data.length){list.textContent='لسه مفيش نشاط للمساعد.';return;}data.forEach(r=>{const row=document.createElement('p');row.textContent=new Date(r.created_at).toLocaleString('ar-EG')+' · '+(r.action==='INSERT'?'إضافة':'تعديل')+' · '+(r.title||r.resource);list.append(row);});}
 /* ---------- works ---------- */
 async function loadWorks() {
   const { data, error } = await sb.from("works").select("*").order("sort_order", { ascending: true });
