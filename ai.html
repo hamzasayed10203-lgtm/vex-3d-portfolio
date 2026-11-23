@@ -203,7 +203,7 @@ async function showPanel() {
   await Promise.all([loadWorks(), loadLinks()]);
   const {data:sessionData}=await sb.auth.getSession();const isAI=sessionData.session?.user?.id==='c24cd0e4-2615-418f-ba5f-71acb1ee7782';
   document.body.classList.toggle('ai-account',isAI);
-  if(isAI){document.querySelectorAll('[data-act="del"],#links-save').forEach(b=>b.hidden=true);for(const id of ['link-whatsapp','link-facebook','link-instagram'])$(id).disabled=true;}
+  if(isAI){document.querySelectorAll('[data-act="del"],#links-save').forEach(b=>b.style.display='none');for(const id of ['link-whatsapp','link-facebook','link-instagram'])$(id).disabled=true;}
   await loadAIActivity();
 }
 $("login-btn").onclick = async () => {
