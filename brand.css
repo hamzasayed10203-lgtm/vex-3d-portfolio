@@ -1,0 +1,16 @@
+/* VEX logo palette. To switch the base, change only this variable set. */
+:root{
+ --cream:#eeecdf;--ink:#24231e;--purple:#7058d4;--purple-bright:#a995f0;--purple-deep:#503d8f;--pink:#846edb;
+ --bg:var(--ink);--text:var(--cream);--muted:#c4c0b2;--panel:#2b2924;--panel2:#22211d;--line:#51495f;
+ --bg-soft:rgba(43,41,36,.82);--card:rgba(43,41,36,.86);--border:rgba(132,110,219,.4);
+ --teal:var(--purple-bright);--teal-dim:rgba(112,88,212,.15);--whatsapp:var(--purple);--whatsapp-deep:var(--purple-deep);--danger:#e8a5b8;--radius:14px;
+}
+body{background-color:var(--bg);color:var(--text)}
+.btn-primary,.btn-whatsapp{background:linear-gradient(120deg,var(--purple-deep),var(--purple));color:var(--cream)}
+.nav .nav-cta{color:var(--cream);border-color:var(--purple-bright)}
+.grad{background:linear-gradient(120deg,var(--cream),var(--purple-bright));background-clip:text;-webkit-background-clip:text}
+:focus-visible{outline:2px solid var(--purple-bright);outline-offset:4px}
+.niche-page{background:var(--bg);color:var(--text)}
+.niche-card{background:linear-gradient(145deg,rgba(112,88,212,.1),rgba(238,236,223,.025)),var(--panel);color:var(--text)}
+.niche-detail h1{color:var(--purple-bright)}.niche-detail h2{color:var(--cream)}
+#toast{background:var(--panel);color:var(--text);border:1px solid var(--purple)}
