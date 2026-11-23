@@ -139,7 +139,7 @@ textarea{min-height:70px;resize:vertical}
 <div class="modal-bg" id="edit-modal">
   <div class="modal">
     <h2 id="edit-title">تعديل عمل</h2>
-    <label>العنوان *</label>
+    <label for="f-playlist">البلاي ليست *</label><select id="f-playlist" style="width:100%;padding:13px;color:#eee;background:#171123;border:1px solid #5c3f83;border-radius:10px"><option value="">بنحمّل البلاي ليستات…</option></select><div id="f-new-playlist-wrap" hidden><label for="f-new-playlist">اسم البلاي ليست الجديدة *</label><input id="f-new-playlist" type="text" maxlength="80"></div><p class="hint">كل فيديو داخل بلاي ليست. اختار واحدة أو أنشئ جديدة.</p><label>العنوان *</label>
     <input type="text" id="f-title">
     <label>لينك الفيديو (درايف / يوتيوب / mp4)</label>
     <input type="text" id="f-video" dir="ltr">
@@ -277,7 +277,11 @@ async function del(w) {
 
 /* ---------- edit form ---------- */
 $("add-btn").onclick = () => openEdit(null);
-function openEdit(w) {
+let playlistConfig=[];
+const videoKey=u=>{try{const x=new URL(u);return x.pathname.match(/\/file\/d\/([\w-]+)/)?.[1]||x.searchParams.get('id')||x.href}catch{return u||''}};
+async function readPlaylists(){const {data,error}=await sb.from('site_links').select('url').eq('key','niches_config_v1');if(error)throw error;const list=data.length?JSON.parse(data[0].url):structuredClone(window.VexNiches.defaults);if(!Array.isArray(list))throw Error('invalid');return list;}
+$('f-playlist').onchange=()=>{$('f-new-playlist-wrap').hidden=$('f-playlist').value!=='__new';};
+async function openEdit(w) {
   editingId = w ? w.id : null;
   $("edit-title").textContent = w ? "تعديل عمل" : "عمل جديد";
   $("f-title").value = w ? w.title || "" : "";
@@ -285,7 +289,10 @@ function openEdit(w) {
   $("f-cover").value = w ? w.cover_url || "" : "";
   $("f-desc").value = w ? w.description || "" : "";
   $("f-cover-file").value = "";
+  $('f-new-playlist').value='';$('f-new-playlist-wrap').hidden=true;$('f-playlist').replaceChildren(new Option('بنحمّل…',''));$('edit-save').disabled=true;
   $("edit-modal").classList.add("open");
+  try{playlistConfig=await readPlaylists();const sel=$('f-playlist');sel.replaceChildren(new Option('اختار البلاي ليست…',''));playlistConfig.forEach(n=>sel.add(new Option(n.title+(n.published===false?' (مسودة)':''),n.id)));sel.add(new Option('+ إنشاء بلاي ليست جديدة','__new'));const current=w&&playlistConfig.find(n=>(n.examples||[]).some(e=>e.work_id===w.id||videoKey(e.after)===videoKey(w.video_url)));if(current)sel.value=current.id;$('edit-save').disabled=false;}catch{toast('تحميل البلاي ليستات فشل. اقفل وحاول تاني.',true);}
+
 }
 $("edit-cancel").onclick = () => $("edit-modal").classList.remove("open");
 $("f-cover-file").onchange = async (e) => {
@@ -304,22 +311,33 @@ $("edit-preview").onclick = () => openPreview($("f-title").value, $("f-video").v
 $("edit-save").onclick = async () => {
   const title = $("f-title").value.trim();
   if (!title) { toast("العنوان مطلوب", true); return; }
+  if(!$('f-video').value.trim()){toast('لينك الفيديو مطلوب عشان يظهر في البلاي ليست',true);return;}
   const payload = {
     title,
     video_url: $("f-video").value.trim() || null,
     cover_url: $("f-cover").value.trim() || null,
     description: $("f-desc").value.trim() || null,
   };
+  const chosen=$('f-playlist').value,newTitle=$('f-new-playlist').value.trim();if(!chosen||(chosen==='__new'&&!newTitle)){toast('اختار بلاي ليست أو اكتب اسم الجديدة',true);return;}
+  let nextConfig;try{nextConfig=await readPlaylists();}catch{toast('تعذر تحميل البلاي ليستات. لم يتم الحفظ.',true);return;}
+  if(chosen!=='__new'&&!nextConfig.some(n=>n.id===chosen)){toast('البلاي ليست اتغيرت. افتح النموذج تاني.',true);return;}
+  if(chosen==='__new'&&nextConfig.some(n=>n.title.trim()===newTitle)){toast('الاسم موجود، اختار البلاي ليست من القائمة.',true);return;}
   $("edit-save").disabled = true;
-  let error;
+  let error,savedWorkId=editingId;
   if (editingId) {
     ({ error } = await sb.from("works").update(payload).eq("id", editingId));
   } else {
     const next = works.length ? Math.max(...works.map((w) => w.sort_order || 0)) + 1 : 1;
-    ({ error } = await sb.from("works").insert({ ...payload, sort_order: next }));
+    const inserted=await sb.from("works").insert({ ...payload, sort_order: next }).select('id').single();error=inserted.error;savedWorkId=inserted.data?.id;
   }
-  $("edit-save").disabled = false;
-  if (error) { toast("الحفظ فشل", true); return; }
+  if (error) { $("edit-save").disabled=false; toast("الحفظ فشل", true); return; }
+  if(!savedWorkId){$('edit-save').disabled=false;toast('تعذر تأكيد الفيديو. حدّث الصفحة قبل المحاولة تاني.',true);return;}
+  for(const n of nextConfig)n.examples=(n.examples||[]).filter(e=>e.work_id!==savedWorkId&&(!payload.video_url||videoKey(e.after)!==videoKey(payload.video_url)));
+  let target=nextConfig.find(n=>n.id===chosen);if(chosen==='__new'){target={id:'playlist-'+crypto.randomUUID().slice(0,12),title:newTitle,description:'',published:true,examples:[]};nextConfig.push(target);}
+  target.examples.push({work_id:savedWorkId,title:payload.title,after:payload.video_url,description:payload.description||''});
+  const assignment=await sb.from('site_links').upsert({key:'niches_config_v1',url:JSON.stringify(nextConfig)});
+  $('edit-save').disabled=false;
+  if(assignment.error){editingId=savedWorkId;toast('الفيديو اتحفظ لكن ربط البلاي ليست فشل. جرّب حفظ تاني، مش هيكرر الفيديو.',true);return;}
   $("edit-modal").classList.remove("open");
   await loadWorks();
   toast("اتحفظ ✓");
