@@ -71,6 +71,17 @@
 
 .intro-controls{display:flex;gap:8px;align-items:center}.intro-sound{border:1px solid #514069;border-radius:999px;background:#100d20;color:#cdbbea;min-height:44px;padding:8px 14px;font:600 12px Cairo,system-ui,sans-serif;cursor:pointer}.intro-sound:focus-visible{outline:2px solid #b99aff;outline-offset:3px}@media(max-width:700px){.intro-sound{padding:6px 10px;font-size:10px}.intro-controls{gap:6px}.intro-top{left:5vw;right:5vw}}
 </style>
+<style>/* Clean poster cards. Playback uses the source provider at full viewport. */
+.work-frame{width:min(100%,280px);max-height:none;aspect-ratio:9/16;background:#101020}
+.work-poster{position:absolute;inset:0;display:block;isolation:isolate;text-decoration:none;color:#fff;overflow:hidden;border-radius:14px}
+.work-poster-fallback{position:absolute;inset:0;display:grid;place-items:center;background:radial-gradient(ellipse at 25% 10%,#502294 0,transparent 60%),linear-gradient(150deg,#171127,#080a14);color:#baa1ef;font:900 60px Cairo,sans-serif;letter-spacing:-4px}
+.work-poster img.work-cover{position:absolute;inset:0;object-fit:cover}
+.work-poster-shade{position:absolute;inset:0;background:linear-gradient(0deg,rgba(6,7,15,.8),transparent 40%,rgba(6,7,15,.12))}
+.work-play-icon{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);display:grid;place-items:center;width:68px;height:68px;border-radius:50%;border:1px solid #c5a2ff;background:rgba(49,24,84,.65);backdrop-filter:blur(10px);box-shadow:0 0 40px #8b3dff55;font-size:24px;padding-left:4px}
+.work-poster-badge{position:absolute;bottom:20px;left:12px;right:12px;text-align:center;font:700 13px Cairo,sans-serif;color:#eee5ff}
+.work-poster:hover .work-play-icon{background:#7633d5}
+@media(max-width:600px){.work-frame{width:100%;max-width:320px}.work-card{padding:14px}.work-poster-badge{bottom:18px}}
+</style>
 </head>
 <body>
 <div id="vex-intro" class="vex-intro" role="region" aria-label="مقدمة VEX" aria-hidden="true">
@@ -327,45 +338,16 @@ function buildWorkCard({ title, video, cover, desc }) {
   const yt = video ? toYoutubeEmbed(video) : null;
   const isMp4 = video ? /\.mp4($|\?)/i.test(video) : false;
 
-  if (drive || yt) {
-    const iframe = document.createElement("iframe");
-    iframe.src = drive || yt;
-    iframe.loading = "lazy";
-    iframe.allow = "autoplay; fullscreen";
-    iframe.allowFullscreen = true;
-    iframe.title = title;
-    frame.appendChild(iframe);
-  } else if (isMp4) {
-    const v = document.createElement("video");
-    v.src = video;
-    v.controls = true;
-    v.preload = "metadata";
-    if (cover) v.poster = toDriveImage(cover);
-    frame.appendChild(v);
-  } else if (cover) {
-    const img = document.createElement("img");
-    img.className = "work-cover";
-    img.src = toDriveImage(cover);
-    img.alt = title;
-    img.loading = "lazy";
-    frame.appendChild(img);
-    if (video) {
-      const a = document.createElement("a");
-      a.className = "work-open";
-      a.href = video;
-      a.target = "_blank";
-      a.rel = "noopener";
-      a.setAttribute("aria-label", "شغّل " + title);
-      frame.appendChild(a);
-    }
-  } else if (video) {
-    const a = document.createElement("a");
-    a.className = "work-open";
-    a.href = video;
-    a.target = "_blank";
-    a.rel = "noopener";
-    frame.appendChild(a);
-  }
+  if(video){
+    const open=document.createElement('a');open.className='work-poster';open.href=video.replace(/\/preview(?:\?.*)?$/,'/view');open.target='_blank';open.rel='noopener';open.setAttribute('aria-label','شاهد '+title+' في نافذة جديدة');
+    const fallback=document.createElement('span');fallback.className='work-poster-fallback';fallback.textContent='VEX';open.append(fallback);
+    let thumbnail=cover?toDriveImage(cover):'';
+    if(!thumbnail&&drive){const id=drive.match(/\/d\/([^/]+)/)?.[1];if(id)thumbnail='https://drive.google.com/thumbnail?id='+encodeURIComponent(id)+'&sz=w800'}
+    if(thumbnail){const img=document.createElement('img');img.className='work-cover';img.src=thumbnail;img.alt=title;img.loading='lazy';img.addEventListener('error',()=>img.remove(),{once:true});open.append(img)}
+    const shade=document.createElement('span');shade.className='work-poster-shade';open.append(shade);
+    const play=document.createElement('span');play.className='work-play-icon';play.setAttribute('aria-hidden','true');play.textContent='▶';open.append(play);
+    const badge=document.createElement('span');badge.className='work-poster-badge';badge.textContent='شاهد الفيديو ↗';open.append(badge);frame.append(open);
+  }else if(cover){const img=document.createElement('img');img.className='work-cover';img.src=toDriveImage(cover);img.alt=title;img.loading='lazy';frame.append(img)}
 
   const h3 = document.createElement("h3");
   h3.textContent = title;
