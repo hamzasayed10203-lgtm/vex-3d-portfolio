@@ -82,7 +82,7 @@
 .work-poster:hover .work-play-icon{background:#7633d5}
 @media(max-width:600px){.work-frame{width:100%;max-width:320px}.work-card{padding:14px}.work-poster-badge{bottom:18px}}
 </style>
-</head>
+<style>main section{touch-action:pan-y}#drag-hint{pointer-events:none}</style></head>
 <body>
 <div id="vex-intro" class="vex-intro" role="region" aria-label="مقدمة VEX" aria-hidden="true">
   <div class="intro-dust" aria-hidden="true"></div><div class="intro-orbit intro-orbit-back" aria-hidden="true"><div class="saturn-ring saturn-0"></div><div class="saturn-ring saturn-1"></div><div class="saturn-ring saturn-2"></div></div><div class="intro-orbit intro-orbit-front" aria-hidden="true"><div class="saturn-ring saturn-0"></div><div class="saturn-ring saturn-1"></div><div class="saturn-ring saturn-2"></div></div>
@@ -839,51 +839,26 @@ function initScene() {
     bursts.push({ pts, vel, life: 1 });
   }
 
-  // ---- Interaction state ----
+  // Object drag: horizontal touch gesture, native vertical page scrolling.
   const pointer = { x: 0, y: 0 };
-  const ndc = new THREE.Vector2(-2, -2);
-  let dragging = false;
-  let dragMoved = 0;
-  let lastX = 0;
-  let rotY = 0;
-  let rotVelocity = 0;
-
-  window.addEventListener("pointermove", (e) => {
-    pointer.x = (e.clientX / window.innerWidth) * 2 - 1;
-    pointer.y = -(e.clientY / window.innerHeight) * 2 + 1;
-    ndc.set(pointer.x, pointer.y);
-    if (dragging) {
-      const dx = e.clientX - lastX;
-      lastX = e.clientX;
-      dragMoved += Math.abs(dx);
-      rotVelocity = dx * 0.004;
-      rotY += rotVelocity;
-    }
-  }, { passive: true });
-
-  canvas.addEventListener("pointerdown", (e) => {
-    dragging = true;
-    dragMoved = 0;
-    lastX = e.clientX;
-  });
-  window.addEventListener("pointerup", (e) => {
-    dragging = false;
-    if (dragMoved < 6 && e.type === "pointerup") {
-      // treat as a tap: burst where the ray meets the current zone plane
-      ndc.set((e.clientX / window.innerWidth) * 2 - 1, -(e.clientY / window.innerHeight) * 2 + 1);
-      raycaster.setFromCamera(ndc, camera);
-      const hit = raycaster.intersectObjects(hoverables, false)[0];
-      if (hit) {
-        hit.object.userData.clicked = 1;
-        spawnBurst(hit.point);
-      } else {
-        const plane = new THREE.Plane(new THREE.Vector3(0, 0, 1), 2.5);
-        const p = new THREE.Vector3();
-        if (raycaster.ray.intersectPlane(plane, p)) spawnBurst(p);
-      }
-    }
-  });
-  window.addEventListener("pointercancel", () => { dragging = false; });
+  const ndc = new THREE.Vector2(-2,-2);
+  let dragging=false,dragMoved=0,lastX=0,downX=0,downY=0,dragObject=null,dragPointer=null,rotY=0,rotVelocity=0;
+  const isControl=e=>e.target.closest('a,button,input,textarea,select,iframe,video,.work-card,.nav');
+  function point(e){pointer.x=e.clientX/innerWidth*2-1;pointer.y=-(e.clientY/innerHeight)*2+1;ndc.set(pointer.x,pointer.y)}
+  window.addEventListener('pointerdown',e=>{
+    if(e.button!==0||isControl(e)||document.body.classList.contains('intro-active'))return;
+    point(e);raycaster.setFromCamera(ndc,camera);const hit=raycaster.intersectObjects(hoverables,false)[0];if(!hit)return;
+    dragObject=hit.object;dragPointer=e.pointerId;downX=lastX=e.clientX;downY=e.clientY;dragMoved=0;dragging=false;dragObject.userData.clicked=1;
+  },{passive:true});
+  window.addEventListener('pointermove',e=>{
+    point(e);if(!dragObject||dragPointer!==e.pointerId)return;
+    const dx=e.clientX-lastX;lastX=e.clientX;const x=e.clientX-downX,y=e.clientY-downY;
+    if(!dragging&&e.pointerType==='touch'&&Math.abs(y)>8&&Math.abs(y)>Math.abs(x)){dragObject=null;dragPointer=null;return}
+    if(!dragging&&Math.abs(x)>6&&Math.abs(x)>=Math.abs(y))dragging=true;
+    if(dragging){dragMoved+=Math.abs(dx);dragObject.userData.dragYaw=(dragObject.userData.dragYaw||0)+dx*.012;dragObject.userData.dragPitch=THREE.MathUtils.clamp((dragObject.userData.dragPitch||0)+(e.movementY||0)*.004,-.5,.5)}
+  },{passive:true});
+  function release(e){if(dragPointer!==e.pointerId)return;if(dragObject&&dragMoved<6){raycaster.setFromCamera(ndc,camera);const hit=raycaster.intersectObject(dragObject,false)[0];if(hit)spawnBurst(hit.point)}dragging=false;dragObject=null;dragPointer=null}
+  window.addEventListener('pointerup',release);window.addEventListener('pointercancel',release);
 
   // Scroll: camera travels down the zones
   let scrollProgress = 0;
@@ -906,6 +881,8 @@ function initScene() {
   function animate() {
     requestAnimationFrame(animate);
     const t = clock.getElapsedTime();
+    for(const m of hoverables){m.rotation.y-=m.userData.appliedDragYaw||0;m.rotation.x-=m.userData.appliedDragPitch||0}
+
 
     const camTargetY = -scrollProgress * journeyDepth;
     camera.position.y += (camTargetY + pointer.y * 0.5 - camera.position.y) * 0.06;
@@ -989,7 +966,7 @@ function initScene() {
     raycaster.setFromCamera(ndc, camera);
     const hit = raycaster.intersectObjects(hoverables, false)[0];
     const hovered = hit ? hit.object : null;
-    canvas.style.cursor = hovered ? "pointer" : "grab";
+    canvas.style.cursor = dragging ? "grabbing" : hovered ? "grab" : "default";
     for (const m of hoverables) {
       const target = m === hovered ? 1 : 0;
       m.userData.hover += (target - m.userData.hover) * 0.15;
@@ -1005,6 +982,7 @@ function initScene() {
       if (m.userData.spinFast && m === hovered) m.rotation.y += 0.05;
     }
 
+    for(const m of hoverables){const y=m.userData.dragYaw||0,x=m.userData.dragPitch||0;m.rotation.y+=y;m.rotation.x+=x;m.userData.appliedDragYaw=y;m.userData.appliedDragPitch=x}
     // Bursts
     for (let i = bursts.length - 1; i >= 0; i--) {
       const b = bursts[i];
