@@ -20,8 +20,8 @@
 <link rel="stylesheet" href="brand.css?v=premium-20261123">
 </head>
 <body class="niche-page">
-<header class="nav"><a class="nav-logo" href="./" style="color:inherit;text-decoration:none">VEX<span>.</span></a><nav><a href="./#niches">كل التخصصات</a><a href="./#contact" class="nav-cta">اطلب ريل</a></nav></header>
-<main class="niche-detail"><div id="niche-detail"><p class="niche-empty">بنحمّل الصفحة…</p></div><div class="niche-cta"><a href="./#contact" class="btn btn-primary">نتكلم عن مشروعك</a><a href="./#work" class="btn btn-ghost">شوف كل الأعمال</a></div></main>
+<header class="nav"><a class="nav-logo" href="./" style="color:inherit;text-decoration:none">VEX<span>.</span></a><nav><a href="./#niches">كل التخصصات</a><a href="./#contact" class="nav-cta" data-contact-action>اطلب ريل</a></nav></header>
+<main class="niche-detail"><div id="niche-detail"><p class="niche-empty">بنحمّل الصفحة…</p></div><div class="niche-cta"><a href="./#contact" class="btn btn-primary" data-contact-action>نتكلم عن مشروعك</a><a href="./#work" class="btn btn-ghost">شوف كل الأعمال</a></div></main>
 <footer>
   <div class="footer-row">
     <span>VEX — VISUAL EXPERIENCES</span>
@@ -41,7 +41,7 @@
   </div>
 </footer>
 <script>
-(async()=>{try{const r=await fetch('https://aoabbtazodqpkkriitfj.supabase.co/rest/v1/site_links?select=key,url',{headers:{apikey:'sb_publishable_PKo1mx_pBxg16R8y2_6y6Q_aGRWWDU4'},cache:'no-store'});if(!r.ok)throw Error('links');const rows=await r.json();for(const k of ['whatsapp','facebook','instagram']){const row=rows.find(v=>v.key===k);const a=document.getElementById('social-'+k);if(row?.url&&a){a.href=row.url;a.hidden=false}}}catch(e){console.warn('social links unavailable',e)}})();
+(async()=>{try{const r=await fetch('https://aoabbtazodqpkkriitfj.supabase.co/rest/v1/site_links?select=key,url',{headers:{apikey:'sb_publishable_PKo1mx_pBxg16R8y2_6y6Q_aGRWWDU4'},cache:'no-store'});if(!r.ok)throw Error('links');const rows=await r.json();for(const k of ['whatsapp','facebook','instagram']){const row=rows.find(v=>v.key===k);const a=document.getElementById('social-'+k);if(row?.url&&a){a.href=row.url;a.hidden=false;if(k==='whatsapp'){document.querySelectorAll('[data-contact-action]').forEach(b=>{b.href=row.url;b.target='_blank';b.rel='noopener noreferrer'})}}}}catch(e){console.warn('social links unavailable',e)}})();
 </script>
 <script src="niches.js"></script>
 </body>
