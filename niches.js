@@ -1,5 +1,6 @@
 (() => {
   'use strict';
+  const motionStyle=document.createElement('style');motionStyle.textContent='.vex-motion-sample{border-color:#8b3dff}.vex-motion-sample .niche-media{aspect-ratio:9/16;width:270px;max-width:100%;height:480px;max-height:none;margin:0 auto}@media(max-width:600px){.vex-motion-sample .niche-media{width:254px;height:450px}}';document.head.append(motionStyle);
   const API = 'https://aoabbtazodqpkkriitfj.supabase.co/rest/v1/site_links?key=eq.niches_config_v1&select=url';
   const KEY = 'sb_publishable_PKo1mx_pBxg16R8y2_6y6Q_aGRWWDU4';
   const defaults = [
@@ -28,6 +29,7 @@
       let works=[];
       try{const wr=await fetch('https://aoabbtazodqpkkriitfj.supabase.co/rest/v1/works?select=*',{headers:{apikey:KEY}});if(wr.ok)works=await wr.json()}catch{}
       for(const n of items)n.examples=(n.examples||[]).map(e=>{if(!e.work_id)return e;const w=works.find(w=>w.id===e.work_id);return w?{...e,title:w.title,description:w.description||'',after:w.video_url,cover:w.cover_url}:null}).filter(Boolean);
+      const social=items.find(n=>n.id==='playlist-2da59863-e32');if(social&&!social.examples.some(e=>e.id==='vex-motion-brand'))social.examples.unshift({id:'vex-motion-brand',title:'VEX Motion | تقديم البراند',description:'نموذج موشن للهوية البصرية لـVEX. ١١ ثانية · 9:16.',after:new URL('1-vex-motion.mp4',location.href).href,cover:new URL('4-vex-motion-poster.jpg',location.href).href});
       const published=items.filter(n=>n.published!==false);
       host.replaceChildren();
       if(host.id==='niche-grid'){
@@ -41,7 +43,7 @@
         document.title=n.title+' | VEX';host.append(text('p','VEX / التخصصات','hero-kicker'),text('h1',n.title),text('p',n.description,'niche-lead'),text('h2','الأمثلة وقبل / بعد'));
         const examples=Array.isArray(n.examples)?n.examples:[];
         if(!examples.length)host.append(text('p','الأمثلة هتتضاف هنا قريب. تقدر تشوف الأعمال الحالية من الصفحة الرئيسية.','niche-empty'));
-        examples.forEach(e=>{const article=document.createElement('article');article.className='niche-example';article.append(text('h3',e.title||'مثال'));if(e.description)article.append(text('p',e.description));const grid=document.createElement('div');grid.className='niche-pair';if(e.before){const col=document.createElement('div');col.append(text('h4','قبل المونتاج'),media(e.before,'قبل المونتاج'));grid.append(col);}if(e.after){const col=document.createElement('div');col.append(text('h4',e.before?'بعد المونتاج':'الفيديو'),media(e.after,e.title||'الفيديو'));grid.append(col);}article.append(grid);host.append(article);});
+        examples.forEach(e=>{const article=document.createElement('article');article.className='niche-example';article.append(text('h3',e.title||'مثال'));if(e.description)article.append(text('p',e.description));const grid=document.createElement('div');grid.className='niche-pair';if(e.before){const col=document.createElement('div');col.append(text('h4','قبل المونتاج'),media(e.before,'قبل المونتاج'));grid.append(col);}if(e.after){const col=document.createElement('div');col.append(text('h4',e.before?'بعد المونتاج':'الفيديو'),media(e.after,e.title||'الفيديو'));grid.append(col);}if(e.id==='vex-motion-brand'){article.classList.add('vex-motion-sample');const v=grid.querySelector('video');if(v){v.muted=true;v.defaultMuted=true;v.poster=e.cover;}}article.append(grid);host.append(article);});
       }
     }catch(e){host.replaceChildren(text('p','مش قادرين نحمّل التخصصات دلوقتي. جرّب تاني بعد شوية.','niche-empty'));}
   }
