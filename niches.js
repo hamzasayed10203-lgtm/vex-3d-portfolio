@@ -10,14 +10,16 @@
   ];
   const validUrl = value => {try {const u=new URL(value);return u.protocol==='https:'||u.protocol==='http:' ? u.href : '';}catch{return '';}};
   const text = (tag, value, cls) => {const el=document.createElement(tag);el.textContent=value||'';if(cls)el.className=cls;return el;};
+  /* Drive videos can't be hotlinked into a custom player (Google blocks cross-site use), so these are small copies hosted with the site. Unlisted Drive links keep the Drive player. */
+  const LOCAL={'1hMPFL4FP6bvHEjTy363dKyEVCwFp01yK':['5-vxw1.mp4','1-vxw1.jpg'],'1HficdsCKxcewqkemYcpuD048rxR2DNSz':['6-vxw2.mp4','2-vxw2.jpg'],'1sSnMK7QRq8X4gK285PBntAN3xSbRZf7r':['7-vxw3.mp4','3-vxw3.jpg'],'1WbaMt4MIgAnjuavP2QU51zOy8nRf0pWw':['8-vxw4.mp4','4-vxw4.jpg']};
   function media(url, label) {
     const wrap=document.createElement('div');wrap.className='niche-media';
     let u=validUrl(url);if(!u)return text('p','مفيش فيديو مضاف لسه.','niche-empty');
     const parsed=new URL(u);let embed='';
     if(parsed.hostname==='drive.google.com') {const id=parsed.pathname.match(/\/file\/d\/([\w-]+)/)?.[1]||parsed.searchParams.get('id');if(id&&/^[\w-]+$/.test(id))embed='https://drive.google.com/file/d/'+id+'/preview';}
     if(['www.youtube.com','youtube.com','youtu.be'].includes(parsed.hostname)){const id=parsed.hostname==='youtu.be'?parsed.pathname.slice(1):parsed.searchParams.get('v')||parsed.pathname.split('/')[2];if(id&&/^[\w-]+$/.test(id))embed='https://www.youtube.com/embed/'+id;}
-    if(embed){const f=document.createElement('iframe');f.src=embed;f.title=label;f.loading='lazy';f.allow='fullscreen';f.allowFullscreen=true;wrap.append(f);}
-    else if(/\.(mp4|webm)(\?|$)/i.test(u)){const v=document.createElement('video');v.src=u;v.controls=true;v.preload='none';v.playsInline=true;wrap.append(v);}
+    if(embed){const dm=embed.match(/drive\.google\.com\/file\/d\/([\w-]+)\/preview/);const mkFrame=()=>{const f=document.createElement('iframe');f.src=embed;f.title=label;f.loading='lazy';f.allow='fullscreen';f.allowFullscreen=true;return f;};const local=dm&&LOCAL[dm[1]];if(local&&window.vexPlayer){wrap.classList.add('has-vx');wrap.append(window.vexPlayer(local[0],label,()=>{wrap.classList.remove('has-vx');wrap.replaceChildren(mkFrame());},local[1]));}else wrap.append(mkFrame());}
+    else if(/\.(mp4|webm)(\?|$)/i.test(u)){if(window.vexPlayer){wrap.classList.add('has-vx');wrap.append(window.vexPlayer(u,label));}else{const v=document.createElement('video');v.src=u;v.controls=true;v.preload='none';v.playsInline=true;wrap.append(v);}}
     else {const a=text('a','شاهد الفيديو ↗','btn btn-ghost');a.href=u;a.target='_blank';a.rel='noopener noreferrer';wrap.append(a);}
     return wrap;
   }
