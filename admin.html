@@ -96,6 +96,15 @@ textarea{min-height:70px;resize:vertical}
       <button class="btn primary" id="login-btn" style="width:100%;justify-content:center">دخول</button>
     </div>
     <p class="hint" id="login-err" style="color:var(--danger);margin-top:10px"></p>
+    <p style="margin-top:6px"><a href="#" id="forgot-link" style="color:var(--accent,#8B3DFF);font-size:14px">نسيت كلمة السر؟</a></p>
+  </div>
+  <div class="card hidden" id="reset-card">
+    <h2>كلمة سر جديدة</h2>
+    <p class="hint">اكتب كلمة سر جديدة (8 حروف على الأقل).</p>
+    <input type="password" id="new-pass" autocomplete="new-password" placeholder="••••••••">
+    <input type="password" id="new-pass2" autocomplete="new-password" placeholder="أعد كتابتها" style="margin-top:8px">
+    <div style="margin-top:16px"><button class="btn primary" id="new-pass-btn" style="width:100%;justify-content:center">حفظ ودخول</button></div>
+    <p class="hint" id="reset-msg" style="margin-top:10px"></p>
   </div>
 </div>
 
@@ -190,9 +199,39 @@ function toast(msg, isErr) {
 /* ---------- auth ---------- */
 async function boot() {
   const { data } = await sb.auth.getSession();
-  if (data.session) showPanel(); else showLogin();
-  sb.auth.onAuthStateChange((_e, s) => (s ? showPanel() : showLogin()));
+  if (/type=recovery/.test(location.hash)) window.__recovering = true;
+  if (window.__recovering) showReset(); else if (data.session) showPanel(); else showLogin();
+  sb.auth.onAuthStateChange((ev, s) => {
+    if (ev === "PASSWORD_RECOVERY") { window.__recovering = true; showReset(); return; }
+    if (window.__recovering) return;
+    s ? showPanel() : showLogin();
+  });
 }
+function showReset() {
+  $("login-view").classList.remove("hidden");
+  $("panel-view").classList.add("hidden");
+  [...$("login-view").children].forEach(c => { if (c.id !== "reset-card" && c.classList.contains("card")) c.classList.add("hidden"); });
+  $("reset-card").classList.remove("hidden");
+}
+$("forgot-link").onclick = async (e) => {
+  e.preventDefault();
+  const em = $("login-email").value.trim();
+  if (!em) { $("login-err").style.color = "var(--danger)"; $("login-err").textContent = "اكتب الإيميل فوق الأول وبعدين اضغط نسيت كلمة السر."; return; }
+  const { error } = await sb.auth.resetPasswordForEmail(em, { redirectTo: location.origin + location.pathname });
+  $("login-err").style.color = error ? "var(--danger)" : "inherit";
+  $("login-err").textContent = error ? "حصلت مشكلة، جرب كمان شوية." : "لو الإيميل مسجل، هيوصلك رابط لإعادة تعيين كلمة السر. شوف الـ Inbox والـ Spam.";
+};
+$("new-pass-btn").onclick = async () => {
+  const a = $("new-pass").value, b = $("new-pass2").value, m = $("reset-msg");
+  m.style.color = "var(--danger)";
+  if (a.length < 8) { m.textContent = "كلمة السر لازم 8 حروف على الأقل."; return; }
+  if (a !== b) { m.textContent = "الكلمتين مش متطابقتين."; return; }
+  const { error } = await sb.auth.updateUser({ password: a });
+  if (error) { m.textContent = "ماتحفظتش: " + (error.message || "جرب تاني"); return; }
+  window.__recovering = false;
+  history.replaceState(null, "", location.pathname);
+  location.reload();
+};
 function showLogin() {
   $("login-view").classList.remove("hidden");
   $("panel-view").classList.add("hidden");
