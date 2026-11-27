@@ -130,6 +130,14 @@ textarea{min-height:70px;resize:vertical}
     <div id="works-list"><p class="hint"><span class="spin"></span> بنحمّل…</p></div>
   </div>
 
+  <!-- Room screens -->
+  <div class="card" id="room-card">
+    <h2>شاشات الغرفة 3D</h2>
+    <p class="hint">اختار الفيديو اللي يظهر على كل شاشة في الغرفة. دوس "حفظ" والتغيير يظهر لما حد يفتح الغرفة.</p>
+    <div id="room-slots"></div>
+    <div style="margin-top:14px"><button class="btn primary" id="room-save">حفظ شاشات الغرفة</button></div>
+  </div>
+
   <!-- Links -->
   <div class="card">
     <h2>لينكات التواصل</h2>
@@ -236,10 +244,44 @@ function showLogin() {
   $("login-view").classList.remove("hidden");
   $("panel-view").classList.add("hidden");
 }
+
+/* ---------- room screens ---------- */
+const ROOM_CATALOG=[
+ ["1-vxw5.mp4","فيديو 1 (كابتشن)","posters/1-vxw5.jpg"],
+ ["8-vxw4.mp4","فيديو 2","posters/8-vxw4.jpg"],
+ ["1-vxw6.mp4","فيديو 3","posters/1-vxw6.jpg"],
+ ["1-vex-stand-out.mp4","ستاند أوت","posters/1-vex-stand-out.jpg"],
+ ["1-vex-motion.mp4","موشن VEX","posters/1-vex-motion.jpg"],
+ ["5-vxw1.mp4","فيديو 4","posters/5-vxw1.jpg"],
+ ["6-vxw2.mp4","فيديو 5","posters/6-vxw2.jpg"],
+ ["7-vxw3.mp4","فيديو 6","posters/7-vxw3.jpg"]];
+const ROOM_DEFAULT=["1-vxw5.mp4","8-vxw4.mp4","1-vxw6.mp4","1-vex-stand-out.mp4"];
+async function loadRoom(){
+  let cur=ROOM_DEFAULT;
+  try{const {data}=await sb.from('site_links').select('url').eq('key','room_screens_v1');if(data&&data.length){const a=JSON.parse(data[0].url);if(Array.isArray(a)&&a.length===4)cur=a;}}catch(e){}
+  const box=$("room-slots");box.innerHTML="";
+  cur.forEach((f,i)=>{
+    const row=document.createElement("div");row.style.cssText="display:flex;align-items:center;gap:12px;margin-bottom:12px";
+    const img=document.createElement("img");img.style.cssText="width:48px;height:84px;object-fit:cover;border-radius:8px;background:#000";
+    const sel=document.createElement("select");sel.dataset.slot=i;sel.style.cssText="flex:1;padding:12px;font-size:16px;border-radius:10px;background:var(--panel2);color:inherit;border:1px solid var(--line)";
+    ROOM_CATALOG.forEach(([file,label])=>{const o=document.createElement("option");o.value=file;o.textContent=label;if(file===f)o.selected=true;sel.appendChild(o);});
+    const upd=()=>{const c=ROOM_CATALOG.find(x=>x[0]===sel.value);img.src=c&&c[2]?c[2]:"";};
+    sel.addEventListener("change",upd);upd();
+    const lbl=document.createElement("b");lbl.textContent="شاشة "+(i+1);lbl.style.minWidth="58px";
+    row.append(lbl,img,sel);box.appendChild(row);
+  });
+}
+async function saveRoom(){
+  const vals=[...document.querySelectorAll("#room-slots select")].map(s=>s.value);
+  const { error } = await sb.from("site_links").upsert({key:"room_screens_v1",url:JSON.stringify(vals)});
+  if(error){toast("ما اتحفظش: "+error.message,true);return;}
+  toast("اتحفظ — الغرفة هتعرض الفيديوهات الجديدة");
+}
+document.addEventListener("DOMContentLoaded",()=>{const b=$("room-save");if(b)b.addEventListener("click",saveRoom);});
 async function showPanel() {
   $("login-view").classList.add("hidden");
   $("panel-view").classList.remove("hidden");
-  await Promise.all([loadWorks(), loadLinks()]);
+  await Promise.all([loadWorks(), loadLinks(), loadRoom()]);
   const {data:sessionData}=await sb.auth.getSession();const isAI=sessionData.session?.user?.id==='c24cd0e4-2615-418f-ba5f-71acb1ee7782';
   document.body.classList.toggle('ai-account',isAI);
   if(isAI){document.querySelectorAll('[data-act="del"],#links-save').forEach(b=>b.style.display='none');for(const id of ['link-whatsapp','link-facebook','link-instagram'])$(id).disabled=true;}
