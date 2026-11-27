@@ -45,7 +45,7 @@
 <script>
 (async()=>{try{const r=await fetch('https://aoabbtazodqpkkriitfj.supabase.co/rest/v1/site_links?select=key,url',{headers:{apikey:'sb_publishable_PKo1mx_pBxg16R8y2_6y6Q_aGRWWDU4'},cache:'no-store'});if(!r.ok)throw Error('links');const rows=await r.json();for(const k of ['whatsapp','facebook','instagram']){const row=rows.find(v=>v.key===k);const a=document.getElementById('social-'+k);if(row?.url&&a){a.href=row.url;a.hidden=false;if(k==='whatsapp'){document.querySelectorAll('[data-contact-action]').forEach(b=>{b.href=row.url;b.target='_blank';b.rel='noopener noreferrer'})}}}}catch(e){console.warn('social links unavailable',e)}})();
 </script>
-<script src="vex-player.js?v=1"></script><script src="niches.js?v=vx2"></script>
+<script src="vex-player.js?v=1"></script><script src="niches.js?v=vx3"></script>
 <script>(()=>{'use strict';
 const pairs=[['مطاعم وكافيهات','Restaurants & cafés'],['مونتاج ريلز للمطاعم والكافيهات.','Reel editing for restaurants and cafés.'],['القهوة | قبل وبعد','Coffee | Before & after'],['مقارنة قبل وبعد المونتاج، بكابشن عربي وعناصر موشن. ١٤ ثانية · 9:16.','Before and after editing, with Arabic captions and motion graphics. 14 seconds · 9:16.'],['الفيديوهات','Videos'],
 
