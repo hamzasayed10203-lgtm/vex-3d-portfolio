@@ -1062,7 +1062,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const video = document.getElementById("introVideo");
   const cta = document.getElementById("hero-cta");
   const works = document.getElementById("hero-works-cta");
-  let playing = false;
+  let playing = false, shownAt = 0, closing = false;
 
   async function playIntro(e) {
     e.preventDefault();
@@ -1070,36 +1070,49 @@ document.addEventListener("DOMContentLoaded", () => {
     playing = true;
     window.__introPlaying = true; // pauses the background render loops while the overlay covers them
     overlay.classList.add("show");
+    shownAt = Date.now();
+    // Start playback synchronously inside the tap gesture (sound works on Android), then go fullscreen.
+    video.muted = false;
+    video.currentTime = 0;
+    video.play().catch(() => { video.muted = true; video.play().catch(() => {}); });
     const portraitPhone = matchMedia("(max-width: 767px) and (orientation: portrait)").matches;
     if (portraitPhone) {
       try {
         if (overlay.requestFullscreen) {
-          await overlay.requestFullscreen();
-          try { await screen.orientation.lock("landscape"); } catch (_) {}
+          overlay.requestFullscreen().then(() => { try { screen.orientation.lock("landscape").catch(() => {}); } catch (_) {} }).catch(() => {});
         } else if (video.webkitEnterFullscreen) {
           video.webkitEnterFullscreen(); // iOS native fullscreen player, uncropped
         }
       } catch (_) {}
     }
-    video.muted = false;
-    video.currentTime = 0;
-    video.play().catch(() => { video.muted = true; video.play().catch(() => {}); });
   }
 
-  function closeIntro() {
+  function closeIntro(fast) {
+    if (closing) return;
+    closing = true;
     window.__introPlaying = false;
+    if (fast === true) overlay.style.transition = "opacity .25s ease";
     try { screen.orientation.unlock(); } catch (_) {}
     if (document.fullscreenElement) { document.exitFullscreen().catch(() => {}); }
     overlay.classList.add("fading");
     setTimeout(() => {
       overlay.classList.remove("show", "fading");
+      overlay.style.transition = "";
       video.pause();
-      playing = false;
+      playing = false; closing = false;
       try { sessionStorage.setItem("vexIntroPlayed", "1"); } catch (_) {}
-    }, 820);
+    }, fast === true ? 280 : 820);
   }
 
-  video.addEventListener("ended", closeIntro);
+  video.addEventListener("ended", () => closeIntro());
+  // Skip: tap anywhere or swipe up -> quick fade-out (ignore the opening tap)
+  let sy = null;
+  overlay.addEventListener("click", () => { if (playing && Date.now() - shownAt > 500) closeIntro(true); });
+  overlay.addEventListener("touchstart", (e) => { sy = e.touches[0].clientY; }, { passive: true });
+  overlay.addEventListener("touchend", (e) => {
+    if (sy !== null && playing && Date.now() - shownAt > 500 && sy - e.changedTouches[0].clientY > 50) closeIntro(true);
+    sy = null;
+  }, { passive: true });
   function maybePlay(e) {
     let seen = null;
     try { seen = sessionStorage.getItem("vexIntroPlayed"); } catch (_) {}
